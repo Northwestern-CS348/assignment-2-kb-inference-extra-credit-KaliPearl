@@ -130,6 +130,82 @@ class KnowledgeBase(object):
         # Implementation goes here
         # Not required for the extra credit assignment
 
+    def printrulestatement(self, rule):
+        """
+
+        :param rule:
+        :return:
+        """
+        ####################################################
+        output = "("
+        for x in rule.lhs[:-1]:
+            output += "(" + x.predicate + " " + ' '.join((str(t) for t in x.terms)) + "), "
+        x = rule.lhs[-1]
+        output += "(" + x.predicate + " " + ' '.join((str(t) for t in x.terms)) + ")) -> "
+        x = rule.rhs
+        output += "(" + x.predicate + " " + ' '.join((str(t) for t in x.terms)) + ")"
+        return output
+
+    def printrule(self, rule, indent):
+        try:
+            find = self.rules.index(rule)
+            rule = self.rules[find]
+        except ValueError:
+            return "Rule is not in the KB\n"
+        output = " " * indent + "rule: " + self.printrulestatement(rule)
+        if rule.asserted:
+            output += " ASSERTED\n"
+        else:
+            output += "\n"
+
+        if rule.supported_by:
+
+            for y in rule.supported_by:
+                output += " " * indent + "  SUPPORTED BY\n"
+                output += self.printfact(y[0], indent + 4)
+                output += self.printrule(y[1], indent + 4)
+
+        return output
+
+    def printstatement(self, fact):
+        """
+
+
+        :param fact:
+        :return:
+        """
+        ####################################################
+
+        output = "("
+        output += str(fact.statement.predicate)
+        for x in fact.statement.terms:
+            output += " "
+            output += str(x)
+        output += ")"
+        return output
+
+    def printfact(self, fact, indent):
+        """
+        """
+        try:
+            find = self.facts.index(fact)
+            fact = self.facts[find]
+        except ValueError:
+            return "Fact is not in the KB\n"
+        output = " " * indent + "fact: " + self.printstatement(fact)
+        if fact.asserted:
+            output += " ASSERTED\n"
+        else:
+            output += "\n"
+        if fact.supported_by:
+
+            for y in fact.supported_by:
+                output += " " * indent + "  " + "SUPPORTED BY\n"
+                output += self.printfact(y[0], indent + 4)
+                output += self.printrule(y[1], indent + 4)
+
+        return output
+
     def kb_explain(self, fact_or_rule):
         """
         Explain where the fact or rule comes from
@@ -142,6 +218,17 @@ class KnowledgeBase(object):
         """
         ####################################################
         # Student code goes here
+
+        if isinstance(fact_or_rule, Fact):
+            output = self.printfact(fact_or_rule, 0)
+            return output
+
+        elif isinstance(fact_or_rule, Rule):
+            output = self.printrule(fact_or_rule, 0)
+            return output
+
+        else:
+            return False
 
 
 class InferenceEngine(object):
